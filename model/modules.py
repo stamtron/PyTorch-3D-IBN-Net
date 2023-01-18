@@ -82,22 +82,19 @@ class Head(torch.nn.Module):
     def __init__(self):
         super(Head, self).__init__()
         self.flatten = Flatten()
-        self.headbn1 = nn.BatchNorm1d(4096)
-        self.headdr1 = nn.Dropout(p=0.25)
-        self.fc1 = nn.Linear(4096, 512) #num_classes)
-        self.headre1 = nn.ReLU(inplace=True)
-        self.headbn2 = nn.BatchNorm1d(512)
-        self.headdr2 = nn.Dropout(p=0.5)
-        self.fc2 = nn.Linear(512,5)
+        self.classifier = nn.Sequential(
+                nn.BatchNorm1d(4096),
+                nn.Dropout(p=0.25),
+                nn.Linear(4096, 512),
+                nn.ReLU(inplace=True),
+                nn.BatchNorm1d(512),
+                nn.Dropout(p=0.5),
+                nn.Linear(512,5))
         
     def forward(self, x):
-        x = self.headbn1(x)
-        x = self.fc1(x)
-        x = self.headre1(x)
-        x = self.headbn2(x)
-        #x_512 = x
-        x = self.fc2(x)
-        return x #, x_512
+        x = self.flatten(x)
+        x = self.classifier(x)
+        return x
     
     
 class SELayer(nn.Module):
